@@ -6,10 +6,10 @@ pipeline {
                 sh '''
                 ssh -i ~/.ssh/id_rsa jenkins@10.154.0.43 << EOF
                 docker network create jenkins-network || true
-                docker stop python-api || echo "flask-app not running"
-                docker stop jenkins-nginx || echo "nginx Not Running"
-                docker rm python-api || echo "flask-app not running"
-                docker rm jenkins-nginx || echo "nginx Not Running"
+                docker stop python-api || echo "python-api not running"
+                docker stop jenkins-nginx || echo "jenkins-nginx not running"
+                docker rm python-api || echo "python-api doesn't exist"
+                docker rm jenkins-nginx || echo "jenkins-nginx doesn't exist"
                 docker rmi steoconnor/python-api || echo "no python-api image to remove"
                 docker rmi steoconnor/jenkins-nginx || echo "no jenkins-nginx image to remove"
                 '''
