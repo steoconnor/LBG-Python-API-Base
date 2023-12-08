@@ -18,8 +18,8 @@ pipeline {
         stage('Build') {
             steps {
                 sh '''
-                docker build -t steoconnor/python-api -t steoconnor/python-api:v${BUILD_NUMBER} .   
-                docker build -t steoconnor/jenkins-nginx -t steoconnor/jenkins-nginx:v${BUILD_NUMBER} ./nginx               
+                docker build -t python-api -t steoconnor/python-api:v${BUILD_NUMBER} .   
+                docker build -t jenkins-nginx -t steoconnor/jenkins-nginx:v${BUILD_NUMBER} ./nginx               
                 '''
            }
         }
@@ -37,8 +37,8 @@ pipeline {
             steps {
                 sh '''
                 ssh -i ~/.ssh/id_rsa jenkins@10.154.0.43 << EOF
-                docker run -d --name steoconnor/python-api --network jenkins-network steoconnor/python-api
-                docker run -d -p 80:80 --name steoconnor/jenkins-nginx --network jenkins-network steoconnor/jenkins-nginx
+                docker run -d --name python-api --network jenkins-network steoconnor/python-api
+                docker run -d -p 80:80 --name jenkins-nginx --network jenkins-network steoconnor/jenkins-nginx
                 '''
             }
         }
