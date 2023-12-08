@@ -10,6 +10,8 @@ pipeline {
                 docker stop jenkins-nginx || echo "nginx Not Running"
                 docker rm flask-app || echo "flask-app not running"
                 docker rm jenkins-nginx || echo "nginx Not Running"
+                docker rmi steoconnor/python-api || echo "no python-api image to remove"
+                docker rmi steoconnor/jenkins-nginx || echo "no jenkins-nginx image to remove"
                 '''
            }
         }
