@@ -36,7 +36,7 @@ pipeline {
                 sh '''
                 ssh -i ~/.ssh/id_rsa jenkins@10.154.0.43 << EOF
                 docker run -d -p 80:8080 --name flask-app --network jenkins-network steoconnor/python-api
-                docker run -d -p --name jenkins-nginx --network jenkins-network steoconnor/jenkins-nginx
+                docker run -d --name jenkins-nginx --network jenkins-network steoconnor/jenkins-nginx
                 '''
             }
         }
