@@ -6,9 +6,9 @@ pipeline {
                 sh '''
                 ssh -i ~/.ssh/id_rsa jenkins@10.154.0.43 << EOF
                 docker network create jenkins-network || true
-                docker stop flask-app || echo "flask-app not running"
+                docker stop python-api || echo "flask-app not running"
                 docker stop jenkins-nginx || echo "nginx Not Running"
-                docker rm flask-app || echo "flask-app not running"
+                docker rm python-api || echo "flask-app not running"
                 docker rm jenkins-nginx || echo "nginx Not Running"
                 docker rmi steoconnor/python-api || echo "no python-api image to remove"
                 docker rmi steoconnor/jenkins-nginx || echo "no jenkins-nginx image to remove"
@@ -37,7 +37,7 @@ pipeline {
             steps {
                 sh '''
                 ssh -i ~/.ssh/id_rsa jenkins@10.154.0.43 << EOF
-                docker run -d -p 80:8080 --name flask-app --network jenkins-network steoconnor/python-api
+                docker run -d -p 80:8080 --name python-api --network jenkins-network steoconnor/python-api
                 docker run -d --name jenkins-nginx --network jenkins-network steoconnor/jenkins-nginx
                 '''
             }
