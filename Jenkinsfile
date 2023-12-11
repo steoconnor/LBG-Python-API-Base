@@ -45,8 +45,8 @@ pipeline {
                     '''
                     } else if (env.GIT_BRANCH == 'origin/develop') {
                     sh '''
-                    docker build -t python-api -t steoconnor/python-api:v${BUILD_NUMBER} .   
-                    docker build -t flask-nginx -t steoconnor/flask-nginx:v${BUILD_NUMBER} ./nginx               
+                    docker build -t steoconnor/python-api -t steoconnor/python-api:v${BUILD_NUMBER} .   
+                    docker build -t steoconnor/flask-nginx -t steoconnor/flask-nginx:v${BUILD_NUMBER} ./nginx               
                     '''
                     } else {
                     sh '''
