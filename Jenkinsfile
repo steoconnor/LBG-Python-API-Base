@@ -7,23 +7,25 @@ pipeline {
 			        if (env.GIT_BRANCH == 'origin/main') {
                        sh '''
                        ssh -i ~/.ssh/id_rsa jenkins@10.154.0.43 << EOF
-                       docker network create jenkins-network || echo "network already exists"
                        docker stop flask-app || echo "flask-app not running"
-                       docker rm flask-app || echo "flask-app doesn't exist"
+                       docker rm flask-app || echo "flask-app not running"
                        docker stop nginx || echo "nginx not running"
-                       docker rm nginx || echo "nginx doesn't exist"
-                       docker rmi steoconnor/flask-nginx || echo "no flask-nginx image to remove"
+                       docker rm nginx || echo "nginx not running"
+                       docker rmi steoconnor/python-api || echo "Image does not exist"
+                       docker rmi steoconnor/flask-nginx || echo "Image does not exist"
+                       docker network create jenkins-network || echo "network already exists"
                        '''
                     } else if (env.GIT_BRANCH == 'origin/develop') {
                        sh '''
                        #new test ip address
                        ssh -i ~/.ssh/id_rsa jenkins@10.154.0.29 << EOF
-                       docker network create jenkins-network || echo "network already exists"
-                       docker stop flask-app || echo "flask-app not running"
-                       docker rm flask-app || echo "flask-app doesn't exist"
-                       docker stop nginx || echo "nginx not running"
-                       docker rm nginx || echo "nginx doesn't exist"
-                       docker rmi steoconnor/flask-nginx || echo "no flask-nginx image to remove"
+                        docker stop flask-app || echo "flask-app not running"
+                        docker rm flask-app || echo "flask-app not running"
+                        docker stop nginx || echo "nginx not running"
+                        docker rm nginx || echo "nginx not running"
+                        docker rmi steoconnor/python-api || echo "Image does not exist"
+                        docker rmi steoconnor/flask-nginx || echo "Image does not exist"
+                        docker network create project || echo "network already exists"
                        '''
                     } else {
                     sh '''
