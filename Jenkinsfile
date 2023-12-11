@@ -17,7 +17,7 @@ pipeline {
                     } else if (env.GIT_BRANCH == 'origin/dev') {
                        sh '''
                        #new test ip address
-                       ssh -i ~/.ssh/id_rsa jenkins@10.154.0.43 << EOF
+                       ssh -i ~/.ssh/id_rsa jenkins@10.154.0.29 << EOF
                        docker network create jenkins-network || echo "network already exists"
                        docker stop flask-app || echo "flask-app not running"
                        docker rm flask-app || echo "flask-app doesn't exist"
@@ -88,7 +88,7 @@ pipeline {
                     } else if (env.GIT_BRANCH == 'origin/dev') {
                     sh '''
                     #new test ip address
-                    ssh -i ~/.ssh/id_rsa jenkins@10.154.0.43 << EOF 
+                    ssh -i ~/.ssh/id_rsa jenkins@10.154.0.29 << EOF 
                     docker run -d --name flask-app --network jenkins-network steoconnor/python-api
                     docker run -d -p 80:80 --name nginx --network jenkins-network steoconnor/flask-nginx
                     '''
