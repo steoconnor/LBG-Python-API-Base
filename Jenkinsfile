@@ -14,7 +14,7 @@ pipeline {
                        docker rm nginx || echo "nginx doesn't exist"
                        docker rmi steoconnor/flask-nginx || echo "no flask-nginx image to remove"
                        '''
-                    } else if (env.GIT_BRANCH == 'origin/dev') {
+                    } else if (env.GIT_BRANCH == 'origin/develop') {
                        sh '''
                        #new test ip address
                        ssh -i ~/.ssh/id_rsa jenkins@10.154.0.29 << EOF
@@ -41,7 +41,7 @@ pipeline {
                     sh '''
                     echo "Build not required in main"
                     '''
-                    } else if (env.GIT_BRANCH == 'origin/dev') {
+                    } else if (env.GIT_BRANCH == 'origin/develop') {
                     sh '''
                     docker build -t python-api -t steoconnor/python-api:v${BUILD_NUMBER} .   
                     docker build -t flask-nginx -t steoconnor/flask-nginx:v${BUILD_NUMBER} ./nginx               
@@ -61,7 +61,7 @@ pipeline {
                     sh '''
                     echo "Push not required in main"
                     '''
-                    } else if (env.GIT_BRANCH == 'origin/dev') {
+                    } else if (env.GIT_BRANCH == 'origin/develop') {
                     sh '''
                     docker push steoconnor/python-api
                     docker push steoconnor/python-api:v${BUILD_NUMBER}
@@ -85,7 +85,7 @@ pipeline {
                     docker run -d --name flask-app --network jenkins-network steoconnor/python-api
                     docker run -d -p 80:80 --name nginx --network jenkins-network steoconnor/flask-nginx
                     '''
-                    } else if (env.GIT_BRANCH == 'origin/dev') {
+                    } else if (env.GIT_BRANCH == 'origin/develop') {
                     sh '''
                     #new test ip address
                     ssh -i ~/.ssh/id_rsa jenkins@10.154.0.29 << EOF 
