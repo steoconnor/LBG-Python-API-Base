@@ -27,29 +27,25 @@ pipeline {
     }
         }
         stage('Deploy to GKE') {
-            steps {
-                script {
-			        if (env.GIT_BRANCH == 'origin/main') {
+           script {
+                    if (env.GIT_BRANCH == "origin/main") {
                     sh '''
-                    ssh -i ~/.ssh/id_rsa jenkins@10.154.0.43 << EOF
-                    docker run -d --name ${IMAGE_NAME} --network jenkins-network ${GCR_URL}/${IMAGE_NAME}:${BUILD_NUMBER}
-                    #docker run -d -p 80:80 --name nginx --network jenkins-network steoconnor/flask-nginx
-                    '''
-                    } else if (env.GIT_BRANCH == 'origin/develop') {
-                    sh '''
-                    #new test ip address
-                    ssh -i ~/.ssh/id_rsa jenkins@10.154.0.29 << EOF 
-                    docker run -d --name ${IMAGE_NAME} --network jenkins-network ${GCR_URL}/${IMAGE_NAME}:${BUILD_NUMBER}
-                    #docker run -d -p 80:80 --name nginx --network jenkins-network steoconnor/flask-nginx
-                    '''
-                    } else {
-                    sh '''
-                    echo "Unrecognised branch"
+                    kubectl apply -n prod -f ./kubernetes
+                    kubectl set image steve-gcr-python-api -n prod task1=${GCR_URL}/${IMAGE_NAME}:prod-${BUILD_NUMBER}
                     '''
                     }
-
+                    else if (env.GIT_BRANCH == "origin/develop") {
+                    sh '''
+                    kubectl apply -n dev -f ./kubernetes
+                    kubectl set image steve-gcr-python-api -n dev task1=${GCR_URL}/${IMAGE_NAME}:dev-${BUILD_NUMBER}
+                    '''
+                    }
+                    else {
+                    sh '''
+                    echo "Branch not recognised"
+                    '''
+                    }
                 }
-            }    
         }
     }
 }
