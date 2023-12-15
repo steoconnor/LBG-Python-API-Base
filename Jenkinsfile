@@ -22,39 +22,5 @@ pipeline {
         }
     }
         }
-        stage('Deploy') {
-            steps {
-                script {
-			        if (env.GIT_BRANCH == 'origin/main') {
-                    sh '''
-                    ssh -i ~/.ssh/id_rsa jenkins@10.154.0.43 << EOF
-                    docker run -d --name flask-app --network jenkins-network steoconnor/python-api
-                    docker run -d -p 80:80 --name nginx --network jenkins-network steoconnor/flask-nginx
-                    '''
-                    } else if (env.GIT_BRANCH == 'origin/develop') {
-                    sh '''
-                    #new test ip address
-                    ssh -i ~/.ssh/id_rsa jenkins@10.154.0.29 << EOF 
-                    docker run -d --name flask-app --network jenkins-network steoconnor/python-api
-                    docker run -d -p 80:80 --name nginx --network jenkins-network steoconnor/flask-nginx
-                    '''
-                    } else {
-                    sh '''
-                    echo "Unrecognised branch"
-                    '''
-                    }
-
-                }
-            }    
-        }
-        stage('Cleanup') {
-            steps {
-                sh '''
-                docker system prune -f
-                docker rmi steoconnor/python-api || echo "no python-api image to remove"
-                docker rmi steoconnor/flash-nginx || echo "no flash-nginx image to remove"
-                '''
-           }
-        }
     }
 }
