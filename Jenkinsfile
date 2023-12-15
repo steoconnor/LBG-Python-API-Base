@@ -8,7 +8,7 @@ pipeline {
                         sh '''
                         kubectl create ns prod || echo "------- Prod Namespace Already Exists -------"
                         '''
-                    } else if (env.GIT_BRANCH == 'origin/dev') {
+                    } else if (env.GIT_BRANCH == 'origin/develop') {
                         sh '''
                         kubectl create ns dev || echo "------- Dev Namespace Already Exists -------"
                         '''
@@ -27,7 +27,7 @@ pipeline {
                         sh '''
                         docker build -t gcr.io/lbg-mea-16/steve-gcr-python-api -t gcr.io/lbg-mea-16/steve-gcr-python-api:prod-v${BUILD_NUMBER} . 
                         '''
-                    } else if (env.GIT_BRANCH == 'origin/dev') {
+                    } else if (env.GIT_BRANCH == 'origin/develop') {
                         sh '''
                         docker build -t gcr.io/lbg-mea-16/steve-gcr-python-api -t gcr.io/lbg-mea-16/steve-gcr-python-api:dev-v${BUILD_NUMBER} .         
                         '''
@@ -47,7 +47,7 @@ pipeline {
                         docker push gcr.io/lbg-mea-16/steve-gcr-python-api
                         docker push gcr.io/lbg-mea-16/steve-gcr-python-api:prod-v${BUILD_NUMBER}
                         '''
-                    } else if (env.GIT_BRANCH == 'origin/dev') {
+                    } else if (env.GIT_BRANCH == 'origin/develop') {
                         sh '''
                         docker push gcr.io/lbg-mea-16/steve-gcr-python-api
                         docker push gcr.io/lbg-mea-16/steve-gcr-python-api:dev-v${BUILD_NUMBER}
@@ -68,7 +68,7 @@ pipeline {
                         kubectl apply -n prod -f ./kubernetes
                         kubectl set image deployment/flask-api-deployment flask-container=gcr.io/lbg-mea-16/steve-gcr-python-api:prod-v${BUILD_NUMBER} -n prod
                         '''
-                    } else if (env.GIT_BRANCH == 'origin/dev') {
+                    } else if (env.GIT_BRANCH == 'origin/develop') {
                         sh '''
                         kubectl apply -n dev -f ./kubernetes
                         kubectl set image deployment/flask-api-deployment flask-container=gcr.io/lbg-mea-16/steve-gcr-python-api:dev-v${BUILD_NUMBER} -n dev
@@ -88,7 +88,7 @@ pipeline {
                         sh '''
                         docker rmi gcr.io/lbg-mea-16/steve-gcr-python-api:prod-v${BUILD_NUMBER}
                         '''
-                    } else if (env.GIT_BRANCH == 'origin/dev') {
+                    } else if (env.GIT_BRANCH == 'origin/develop') {
                         sh '''
                         docker rmi gcr.io/lbg-mea-16/steve-gcr-python-api:dev-v${BUILD_NUMBER}
                         '''
