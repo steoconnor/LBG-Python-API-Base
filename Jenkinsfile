@@ -5,9 +5,9 @@ pipeline {
         IMAGE_NAME = 'steve-gcr-python-api'
         GCR_URL = 'gcr.io/lbg-mea-16'
         PROJECT_ID = 'lbg-mea-16'
-        CLUSTER_NAME = 'demo-cluster'
+        CLUSTER_NAME = 'steve-cluster'
         LOCATION = 'europe-west2-c'
-        CREDENTIALS_ID = 'jenkins'
+        CREDENTIALS_ID = 'steve-jenkins-gcr'
     }
     stages {
         stage('Build and Push to GCR') {
