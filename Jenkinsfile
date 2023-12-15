@@ -10,44 +10,104 @@ pipeline {
         CREDENTIALS_ID = 'steve-jenkins-gcr'
     }
     stages {
-        stage('Build and Push to GCR') {
+        stage('Init') {
             steps {
                 script {
-                    // Authenticate with Google Cloud
-                    withCredentials([file(credentialsId: GCR_CREDENTIALS_ID, variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
-                        sh 'gcloud auth activate-service-account --key-file=$GOOGLE_APPLICATION_CREDENTIALS'
+			        if (env.GIT_BRANCH == 'origin/main') {
+                        sh '''
+                        kubectl create ns prod || echo "------- Prod Namespace Already Exists -------"
+                        '''
+                    } else if (env.GIT_BRANCH == 'origin/dev') {
+                        sh '''
+                        kubectl create ns dev || echo "------- Dev Namespace Already Exists -------"
+                        '''
+                    } else {
+                        sh '''
+                        echo "Unrecognised branch"
+                        '''
                     }
-                    // Configure Docker to use gcloud as a credential helper
-                    sh 'gcloud auth configure-docker --quiet'
-                    // Build the Docker image
-                    sh "docker build -t ${GCR_URL}/${IMAGE_NAME}:${BUILD_NUMBER} ."
-                    // Push the Docker image to GCR
-                    sh "docker push ${GCR_URL}/${IMAGE_NAME}:${BUILD_NUMBER}"
-                }
+		        }
+           }
+        }
+        stage('Build') {
+            steps {
+                script {
+			        if (env.GIT_BRANCH == 'origin/main') {
+                        sh '''
+                        docker build -t gcr.io/lbg-mea-16/steve-gcr-python-api -t gcr.io/lbg-mea-16/steve-gcr-python-api:prod-v${BUILD_NUMBER} . 
+                        '''
+                    } else if (env.GIT_BRANCH == 'origin/dev') {
+                        sh '''
+                        docker build -t gcr.io/lbg-mea-16/steve-gcr-python-api -t gcr.io/lbg-mea-16/steve-gcr-python-api:dev-v${BUILD_NUMBER} .         
+                        '''
+                    } else {
+                        sh '''
+                        echo "Unrecognised branch"
+                        '''
+                    }
+		        }
+           }
+        }
+        stage('Push') {
+            steps {
+                script {
+			        if (env.GIT_BRANCH == 'origin/main') {
+                        sh '''
+                        docker push gcr.io/lbg-mea-16/steve-gcr-python-api
+                        docker push gcr.io/lbg-mea-16/steve-gcr-python-api:prod-v${BUILD_NUMBER}
+                        '''
+                    } else if (env.GIT_BRANCH == 'origin/dev') {
+                        sh '''
+                        docker push gcr.io/lbg-mea-16/steve-gcr-python-api
+                        docker push gcr.io/lbg-mea-16/steve-gcr-python-api:dev-v${BUILD_NUMBER}
+                        '''
+                    } else {
+                        sh '''
+                        echo "Unrecognised branch"
+                        '''
+                    }
+		        }
+           }
+        }
+        stage('Deploy') {
+            steps {
+                script {
+			        if (env.GIT_BRANCH == 'origin/main') {
+                        sh '''
+                        kubectl apply -n prod -f ./kubernetes
+                        kubectl set image deployment/flask-api-deployment flask-container=gcr.io/lbg-mea-16/steve-gcr-python-api:prod-v${BUILD_NUMBER} -n prod
+                        '''
+                    } else if (env.GIT_BRANCH == 'origin/dev') {
+                        sh '''
+                        kubectl apply -n dev -f ./kubernetes
+                        kubectl set image deployment/flask-api-deployment flask-container=gcr.io/lbg-mea-16/steve-gcr-python-api:dev-v${BUILD_NUMBER} -n dev
+                        '''
+                    } else {
+                        sh '''
+                        echo "Unrecognised branch"
+                        '''
+                    }
+		        }
             }
         }
-        stage('Deploy to GKE') {
+        stage('Cleanup') {
             steps {
                 script {
-                    if (env.GIT_BRANCH == "origin/main") {
-                    sh '''
-                    kubectl apply -n prod -f ./kubernetes
-                    kubectl set image steve-gcr-python-api -n prod task1=${GCR_URL}/${IMAGE_NAME}:prod-${BUILD_NUMBER}
-                    '''
-                    }
-                    else if (env.GIT_BRANCH == "origin/develop") {
-                    sh '''
-                    kubectl apply -n dev -f ./kubernetes
-                    kubectl set image steve-gcr-python-api -n dev task1=${GCR_URL}/${IMAGE_NAME}:dev-${BUILD_NUMBER}
-                    '''
-                    }
-                    else {
-                    sh '''
-                    echo "Branch not recognised"
-                    '''
+                    if (env.GIT_BRANCH == 'origin/main') {
+                        sh '''
+                        docker rmi gcr.io/lbg-mea-16/steve-gcr-python-api:prod-v${BUILD_NUMBER}
+                        '''
+                    } else if (env.GIT_BRANCH == 'origin/dev') {
+                        sh '''
+                        docker rmi gcr.io/lbg-mea-16/steve-gcr-python-api:dev-v${BUILD_NUMBER}
+                        '''
                     }
                 }
-            }
+                sh '''
+                docker rmi gcr.io/lbg-mea-16/steve-gcr-python-api:latest
+                docker system prune -f 
+                '''
+           }
+        }
     }
-}
 }
