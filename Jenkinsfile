@@ -1,7 +1,7 @@
 pipeline {
     agent any
     environment {
-        GCR_CREDENTIALS_ID = 'steve-jenkins-gcr' // The ID you provided in Jenkins credentials
+        GCR_CREDENTIALS_ID = '86ef8dfb-3d8a-47f4-82f2-cdbda26e3d00' // The ID you provided in Jenkins credentials
         IMAGE_NAME = 'steve-gcr-python-api'
         GCR_URL = 'gcr.io/lbg-mea-16'
     }
