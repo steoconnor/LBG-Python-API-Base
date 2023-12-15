@@ -1,14 +1,5 @@
 pipeline {
     agent any
-    environment {
-        GCR_CREDENTIALS_ID = '86ef8dfb-3d8a-47f4-82f2-cdbda26e3d00'
-        IMAGE_NAME = 'steve-gcr-python-api'
-        GCR_URL = 'gcr.io/lbg-mea-16'
-        PROJECT_ID = 'lbg-mea-16'
-        CLUSTER_NAME = 'steve-cluster'
-        LOCATION = 'europe-west2-c'
-        CREDENTIALS_ID = 'steve-jenkins-gcr'
-    }
     stages {
         stage('Init') {
             steps {
