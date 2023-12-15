@@ -1,82 +1,26 @@
 pipeline {
     agent any
+    environment {
+        GCR_CREDENTIALS_ID = 'steve-jenkins-gcr' // The ID you provided in Jenkins credentials
+        IMAGE_NAME = 'steve-gcr-python-api'
+        GCR_URL = 'gcr.io/lbg-mea-16'
+    }
     stages {
-        stage('Init') {
-            steps {
-                script {
-			        if (env.GIT_BRANCH == 'origin/main') {
-                       sh '''
-                       ssh -i ~/.ssh/id_rsa jenkins@10.154.0.43 << EOF
-                       docker stop flask-app || echo "flask-app not running"
-                       docker rm flask-app || echo "flask-app not running"
-                       docker stop nginx || echo "nginx not running"
-                       docker rm nginx || echo "nginx not running"
-                       docker rmi steoconnor/python-api || echo "Image does not exist"
-                       docker rmi steoconnor/flask-nginx || echo "Image does not exist"
-                       docker network create jenkins-network || echo "network already exists"
-                       '''
-                    } else if (env.GIT_BRANCH == 'origin/develop') {
-                       sh '''
-                       #new test ip address
-                       ssh -i ~/.ssh/id_rsa jenkins@10.154.0.29 << EOF
-                        docker stop flask-app || echo "flask-app not running"
-                        docker rm flask-app || echo "flask-app not running"
-                        docker stop nginx || echo "nginx not running"
-                        docker rm nginx || echo "nginx not running"
-                        docker rmi steoconnor/python-api || echo "Image does not exist"
-                        docker rmi steoconnor/flask-nginx || echo "Image does not exist"
-                        docker network create project || echo "network already exists"
-                       '''
-                    } else {
-                    sh '''
-                    echo "Unrecognised branch"
-                    '''
-                    }
-
-                }
-            }        
+        stage('Build and Push to GCR') {
+    steps {
+        script {
+            // Authenticate with Google Cloud
+            withCredentials([file(credentialsId: GCR_CREDENTIALS_ID, variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
+                sh 'gcloud auth activate-service-account --key-file=$GOOGLE_APPLICATION_CREDENTIALS'
+            }
+            // Configure Docker to use gcloud as a credential helper
+            sh 'gcloud auth configure-docker --quiet'
+            // Build the Docker image
+            sh "docker build -t ${GCR_URL}/${IMAGE_NAME}:${BUILD_NUMBER} ."
+            // Push the Docker image to GCR
+            sh "docker push ${GCR_URL}/${IMAGE_NAME}:${BUILD_NUMBER}"
         }
-        stage('Build') {
-            steps {
-                 script {
-			        if (env.GIT_BRANCH == 'origin/main') {
-                    sh '''
-                    echo "Build not required in main"
-                    '''
-                    } else if (env.GIT_BRANCH == 'origin/develop') {
-                    sh '''
-                    docker build -t steoconnor/python-api -t steoconnor/python-api:v${BUILD_NUMBER} .   
-                    docker build -t steoconnor/flask-nginx -t steoconnor/flask-nginx:v${BUILD_NUMBER} ./nginx               
-                    '''
-                    } else {
-                    sh '''
-                    echo "Unrecognised branch"
-                    '''
-                    }
-                }
-            }    
-        }
-        stage('Push') {
-            steps { 
-                script {
-			        if (env.GIT_BRANCH == 'origin/main') {
-                    sh '''
-                    echo "Push not required in main"
-                    '''
-                    } else if (env.GIT_BRANCH == 'origin/develop') {
-                    sh '''
-                    docker push steoconnor/python-api
-                    docker push steoconnor/python-api:v${BUILD_NUMBER}
-                    docker push steoconnor/flask-nginx
-                    docker push steoconnor/flask-nginx:v${BUILD_NUMBER}
-                    '''
-                    } else {
-                    sh '''
-                    echo "Unrecognised branch"
-                    '''
-                    }
-                }    
-           }
+    }
         }
         stage('Deploy') {
             steps {
