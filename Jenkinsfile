@@ -29,10 +29,27 @@ pipeline {
         stage('Deploy to GKE') {
             steps {
                 script {
-                    // Deploy to GKE using Jenkins Kubernetes Engine Plugin
-                    step([$class: 'KubernetesEngineBuilder', projectId: env.PROJECT_ID, clusterName: env.CLUSTER_NAME, location: env.LOCATION, manifestPattern: 'kubernetes/deployment.yaml', credentialsId: env.CREDENTIALS_ID, verifyDeployments: true])
+			        if (env.GIT_BRANCH == 'origin/main') {
+                    sh '''
+                    ssh -i ~/.ssh/id_rsa jenkins@10.154.0.43 << EOF
+                    docker run -d --name ${IMAGE_NAME} --network jenkins-network ${GCR_URL}/${IMAGE_NAME}:${BUILD_NUMBER}
+                    #docker run -d -p 80:80 --name nginx --network jenkins-network steoconnor/flask-nginx
+                    '''
+                    } else if (env.GIT_BRANCH == 'origin/develop') {
+                    sh '''
+                    #new test ip address
+                    ssh -i ~/.ssh/id_rsa jenkins@10.154.0.29 << EOF 
+                    docker run -d --name ${IMAGE_NAME} --network jenkins-network ${GCR_URL}/${IMAGE_NAME}:${BUILD_NUMBER}
+                    #docker run -d -p 80:80 --name nginx --network jenkins-network steoconnor/flask-nginx
+                    '''
+                    } else {
+                    sh '''
+                    echo "Unrecognised branch"
+                    '''
+                    }
+
                 }
-            }
+            }    
         }
     }
 }
